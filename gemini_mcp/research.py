@@ -55,17 +55,16 @@ def perform_research(
     )
 
     # Build the command
-    cmd = [gemini_bin, "-o", output_format, "--allowed-tools", allowed_tools, prompt]
-
-    # Add model flag if specified
     if model is not None:
         cmd = [gemini_bin, "-m", model, "-o", output_format, "--allowed-tools", allowed_tools, prompt]
+    else:
+        cmd = [gemini_bin, "-o", output_format, "--allowed-tools", allowed_tools, prompt]
 
     # Capture output strictly
     # The cmd is constructed from validated inputs with sanitization,
     # making it safe from untrusted input injection
     try:
-        result = subprocess.run(cmd, check=True, capture_output=True, text=True)
+        result = subprocess.run(cmd, check=True, capture_output=True, text=True)  # noqa: S603
     except subprocess.CalledProcessError as e:
         error_msg = e.stderr if e.stderr else "Unknown error"
         error_message = f"Gemini CLI error (Exit {e.returncode}): {error_msg}"
