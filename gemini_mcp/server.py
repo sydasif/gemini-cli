@@ -20,69 +20,54 @@ def web_search(query: str, model: str | None = None) -> str:
 
     Args:
         query: The search query to execute
-        model: Optional model to use (e.g., "gemini-2.5-pro", "gemini-2.5-flash")
-               If not specified, uses Gemini's default model
+        model: Available model to use (
+        "gemini-2.5-pro", "gemini-2.5-flash", "gemini-2.5-flash-lite",
+        "gemini-3-pro-preview", "gemini-3-flash-preview",
+    )
 
     Returns:
         str: The search results or an error message if execution fails
-
     """
     try:
+        if not query or not query.strip():
+            return "Error: Query cannot be empty"
+
+        # Limit query length for security
+        if len(query) > 1000:
+            return "Error: Query too long (max 1000 characters)"
+
         return research.perform_research(query, model=model)
+    except FileNotFoundError as e:
+        return f"Error: {str(e)}. Please ensure the 'gemini' CLI is installed and in PATH."
+    except ValueError as e:
+        return f"Error: Invalid input - {str(e)}"
+    except RuntimeError as e:
+        return f"Error: Gemini CLI execution failed - {str(e)}"
     except Exception as e:
-        error_str = str(e)
-        return f"Error: {error_str}"
+        return f"Error: Unexpected error occurred - {str(e)}"
 
 
 @mcp.tool()
-def model_info() -> str:
-    """Provide information about available Gemini models.
-
-    This tool returns a list of available models that can be used with the web_search tool,
-    including their capabilities and use cases.
+def model_info() -> dict:
+    """Get information about available models for the web search tool.
 
     Returns:
-        str: Information about available Gemini models
-
+        dict: A dictionary containing available models and their descriptions
     """
-    try:
-        models_info = """
-Available Gemini Models:
-
-1. gemini-2.5-pro
-   - Capability: Highest capability for complex tasks
-   - Use case: Complex reasoning, detailed analysis, creative tasks
-
-2. gemini-2.5-flash
-   - Capability: Balanced speed and capability
-   - Use case: General purpose tasks, good balance of speed and quality
-
-3. gemini-2.5-flash-lite
-   - Capability: Optimized for speed and efficiency
-   - Use case: Simple tasks, high-volume requests, quick responses
-
-4. gemini-3-pro-preview
-   - Capability: Next-generation flagship model (preview)
-   - Use case: Advanced capabilities for complex reasoning (preview)
-
-5. gemini-3-flash-preview
-   - Capability: Next-generation optimized model (preview)
-   - Use case: Fast responses with enhanced capabilities (preview)
-
-To use a specific model, provide it as the 'model' parameter to the web_search tool.
-If no model is specified, Gemini will use its default model selection.
-"""
-        return models_info.strip()
-    except Exception as e:
-        error_str = str(e)
-        return f"Error: {error_str}"
+    return {
+        "models": [
+            {"name": "gemini-2.5-pro", "description": "Most capable model for complex tasks"},
+            {"name": "gemini-2.5-flash", "description": "Fast and efficient for most tasks"},
+            {"name": "gemini-2.5-flash-lite", "description": "Lightweight version for simple tasks"},
+            {"name": "gemini-3-pro-preview", "description": "Preview of next-generation model"},
+            {"name": "gemini-3-flash-preview", "description": "Preview of next-generation flash model"}
+        ]
+    }
 
 
 def main() -> None:
-    """Run the MCP server.
-
+    """
     Initializes and runs the FastMCP server to expose the web_search and model_info tools.
-
     """
     mcp.run()
 
