@@ -1,0 +1,22 @@
+[project]
+name = "gemini-mcp"
+version = "0.1.0"
+description = "Gemini CLI MCP Server"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "mcp>=1.25.0",
+]
+
+[project.scripts]
+# This creates the command 'gemini-mcp' that calls the main function
+gemini-mcp = "gemini_mcp.server:main"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.2",
+    "pytest-asyncio>=1.3.0",
+]
+
+[tool.uv]
+package = true
