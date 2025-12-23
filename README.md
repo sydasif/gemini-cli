@@ -6,10 +6,13 @@ This project provides an MCP (Model Context Protocol) server that exposes resear
 
 1. Make sure you have `uv` installed
 2. Install the tool globally:
+
    ```bash
-   uv tool install git+https://github.com/YOUR_USERNAME/gemini-cli.git
+   uv tool install git+https://github.com/sydasif/gemini-cli.git
    ```
+
    Or for local development:
+
    ```bash
    uv tool install --editable .
    ```
@@ -17,6 +20,7 @@ This project provides an MCP (Model Context Protocol) server that exposes resear
 ## Usage
 
 To run the MCP server directly:
+
 ```bash
 gemini-mcp
 ```
@@ -44,6 +48,7 @@ gemini-mcp
 ## Connecting to Claude
 
 To add this tool to Claude Code:
+
 ```bash
 claude mcp add gemini-research -- gemini-mcp
 ```
