@@ -29,24 +29,20 @@ def web_search(query: str, model: str | None = None) -> str:
         str: The search results or an error message if execution fails
     """
     try:
-        if not query or not query.strip():
-            return "Error: Query cannot be empty"
-
-        # Limit query length for security
-        if len(query) > 1000:
-            return "Error: Query too long (max 1000 characters)"
-
+        # Validation is delegated to the research module to avoid DRY violation.
+        # research.perform_research will raise ValueError for empty queries or
+        # queries exceeding the length limit defined in that module.
         return research.perform_research(query, model=model)
     except FileNotFoundError as e:
-        return f"Error: {str(e)}. Please ensure the 'gemini' CLI is installed and in PATH."
+        return (
+            f"Error: {str(e)}. Please ensure the 'gemini' CLI is installed and in PATH."
+        )
     except ValueError as e:
         return f"Error: Invalid input - {str(e)}"
     except RuntimeError as e:
         return f"Error: Gemini CLI execution failed - {str(e)}"
     except Exception as e:
         return f"Error: Unexpected error occurred - {str(e)}"
-
-
 
 
 def main() -> None:

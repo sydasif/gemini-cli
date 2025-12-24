@@ -55,10 +55,12 @@ def perform_research(
     )
 
     # Build the command
-    if model is not None:
-        cmd = [gemini_bin, "-m", model, "-o", output_format, "--allowed-tools", allowed_tools, prompt]
-    else:
-        cmd = [gemini_bin, "-o", output_format, "--allowed-tools", allowed_tools, prompt]
+    cmd = [gemini_bin]
+
+    if model:
+        cmd.extend(["-m", model])
+
+    cmd.extend(["-o", output_format, "--allowed-tools", allowed_tools, prompt])
 
     # Capture output strictly
     # The cmd is constructed from validated inputs with sanitization,
