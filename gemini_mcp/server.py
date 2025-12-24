@@ -4,17 +4,14 @@ This module implements the MCP (Model Context Protocol) server using FastMCP tha
 web_search and code_review tools.
 """
 
-import os
-import shutil
-import subprocess
-from pathlib import Path
-
 from mcp.server.fastmcp import FastMCP
 
-
-def _get_gemini_bin() -> str | None:
-    """Get the path to the gemini executable."""
-    return os.environ.get("GEMINI_BIN") or shutil.which("gemini")
+from .core import (
+    execute_gemini_command,
+    get_gemini_bin,
+    read_file_safely,
+    validate_file_path,
+)
 
 mcp = FastMCP("Gemini Research")
 
@@ -30,7 +27,7 @@ def web_search(
         model: Available model to use (e.g., "gemini-1.5-pro", "gemini-1.5-flash")
         allowed_tools: The tools allowed for the research (default: "google_web_search")
     """
-    gemini_bin = _get_gemini_bin()
+    gemini_bin = get_gemini_bin()
 
     if not gemini_bin:
         return "Error: The 'gemini' executable was not found in PATH."
@@ -42,17 +39,7 @@ def web_search(
     cmd.extend(["--allowed-tools", allowed_tools])
     cmd.append(query)
 
-    try:
-        result = subprocess.run(cmd, check=True, capture_output=True, text=True)
-        return result.stdout
-    except subprocess.CalledProcessError as e:
-        return f"Error: Gemini CLI error (Exit {e.returncode}): {e.stderr or 'Unknown error'}"
-    except FileNotFoundError:
-        return "Error: The 'gemini' executable was not found."
-    except PermissionError:
-        return "Error: Permission denied when trying to execute the 'gemini' command."
-    except Exception as e:
-        return f"Error: Unexpected error occurred - {str(e)}"
+    return execute_gemini_command(cmd)
 
 
 @mcp.tool()
@@ -63,45 +50,25 @@ def code_review(file_path: str, query: str) -> str:
         file_path: The path to the file to be processed.
         query: The instruction or question about the code (e.g., "Review for security issues").
     """
-    gemini_bin = _get_gemini_bin()
+    gemini_bin = get_gemini_bin()
 
     if not gemini_bin:
         return "Error: The 'gemini' executable was not found in PATH."
 
-    path = Path(file_path)
-    if not path.exists():
-        return f"Error: File '{file_path}' not found."
+    # Validate the file path
+    is_valid, error_msg, resolved_path = validate_file_path(file_path)
+    if not is_valid:
+        return error_msg
 
-    # Resolve the path to prevent path traversal attacks
-    resolved_path = path.resolve()
-    # Ensure the resolved path is within the current working directory
-    try:
-        resolved_path.relative_to(Path.cwd())
-    except ValueError:
-        return f"Error: Access denied. File path '{file_path}' is outside the allowed directory."
+    # Read the file safely
+    is_success, error_msg, file_content = read_file_safely(resolved_path)
+    if not is_success:
+        return error_msg
 
-    try:
-        # Read file content to pipe into stdin
-        try:
-            file_content = resolved_path.read_text(encoding="utf-8")
-        except UnicodeDecodeError:
-            return f"Error: File '{file_path}' is not a text file or contains invalid UTF-8 encoding."
+    # Execute: cat file | gemini -p "query"
+    cmd = [gemini_bin, "-p", query]
 
-        # Execute: cat file | gemini -p "query"
-        cmd = [gemini_bin, "-p", query]
-
-        result = subprocess.run(
-            cmd, input=file_content, capture_output=True, text=True, check=True
-        )
-        return result.stdout
-    except subprocess.CalledProcessError as e:
-        return f"Error: Code review failed (Exit {e.returncode}): {e.stderr or 'Unknown error'}"
-    except FileNotFoundError:
-        return "Error: The 'gemini' executable was not found."
-    except PermissionError:
-        return "Error: Permission denied when trying to execute the 'gemini' command."
-    except Exception as e:
-        return f"Error: {str(e)}"
+    return execute_gemini_command(cmd)
 
 
 def main() -> None:
