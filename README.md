@@ -50,18 +50,6 @@ result = await client.call_tool("web_search", arguments={
 })
 ```
 
-### model_info
-
-Provides information about available Gemini models that can be used with the web_search tool.
-
-**Parameters:** None
-
-**Example:**
-
-```python
-models_info = await client.call_tool("model_info", arguments={})
-```
-
 ## Architecture
 
 ### Core Components
@@ -74,7 +62,6 @@ models_info = await client.call_tool("model_info", arguments={})
 
 2. **gemini_mcp/server.py**: Implements the MCP server using FastMCP that exposes:
    - A `web_search` tool that wraps the research functionality
-   - A `model_info` tool that provides information about available models
    - Proper MCP protocol compliance
    - Error handling for the MCP interface
 
@@ -121,6 +108,5 @@ uv tool install --upgrade git+https://github.com/sydasif/gemini-cli.git
 
 - **Automatic Model Selection**: Uses Gemini's default model when no specific model is provided
 - **Model Flexibility**: Allows specifying different Gemini models (gemini-2.5-pro, gemini-2.5-flash, etc.) for different use cases
-- **Model Information Tool**: Provides detailed information about available models and their capabilities
 - **Web Search Capabilities**: Executes web searches with research functionality
 - **Error Handling**: Robust error handling and reporting

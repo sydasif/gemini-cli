@@ -1,7 +1,7 @@
 """MCP server implementation that exposes research capabilities.
 
 This module implements the MCP (Model Context Protocol) server using FastMCP that exposes
-web_search and model_info tools wrapping the research functionality.
+web_search tool wrapping the research functionality.
 """
 
 from mcp.server.fastmcp import FastMCP
@@ -47,27 +47,11 @@ def web_search(query: str, model: str | None = None) -> str:
         return f"Error: Unexpected error occurred - {str(e)}"
 
 
-@mcp.tool()
-def model_info() -> dict:
-    """Get information about available models for the web search tool.
-
-    Returns:
-        dict: A dictionary containing available models and their descriptions
-    """
-    return {
-        "models": [
-            {"name": "gemini-2.5-pro", "description": "Most capable model for complex tasks"},
-            {"name": "gemini-2.5-flash", "description": "Fast and efficient for most tasks"},
-            {"name": "gemini-2.5-flash-lite", "description": "Lightweight version for simple tasks"},
-            {"name": "gemini-3-pro-preview", "description": "Preview of next-generation model"},
-            {"name": "gemini-3-flash-preview", "description": "Preview of next-generation flash model"}
-        ]
-    }
 
 
 def main() -> None:
     """
-    Initializes and runs the FastMCP server to expose the web_search and model_info tools.
+    Initializes and runs the FastMCP server to expose the web_search tool.
     """
     mcp.run()
 
