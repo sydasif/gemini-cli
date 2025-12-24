@@ -54,16 +54,12 @@ result = await client.call_tool("web_search", arguments={
 
 ### Core Components
 
-1. **gemini_mcp/research.py**: Contains the core research functionality that acts as a wrapper around the Gemini CLI. It provides:
-   - `perform_research()` function that executes Gemini CLI commands with web search capabilities
-   - Input sanitization and safety measures
-   - Error handling and reporting
-   - Model parameter support for specifying which Gemini model to use
-
-2. **gemini_mcp/server.py**: Implements the MCP server using FastMCP that exposes:
-   - A `web_search` tool that wraps the research functionality
-   - Proper MCP protocol compliance
-   - Error handling for the MCP interface
+**gemini_mcp/server.py**: Implements the complete MCP server functionality that includes:
+- The `web_search` tool that provides research and web search capabilities
+- Direct integration with the Gemini CLI for executing research queries
+- Input sanitization and safety measures to prevent injection attacks
+- Proper MCP protocol compliance
+- Comprehensive error handling for both the MCP interface and Gemini CLI execution
 
 ### Key Dependencies
 
