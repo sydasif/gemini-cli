@@ -1,12 +1,13 @@
-"""MCP server implementation that exposes research capabilities.
+"""MCP server implementation that exposes research and code review capabilities.
 
 This module implements the MCP (Model Context Protocol) server using FastMCP that exposes
-web_search tool with integrated research functionality.
+web_search and code_review tools.
 """
 
 import os
 import shutil
 import subprocess
+from pathlib import Path
 
 from mcp.server.fastmcp import FastMCP
 
@@ -19,52 +20,69 @@ def web_search(
 ) -> str:
     """Perform a web search using the Gemini CLI.
 
-    This tool wraps the research functionality to provide web search capabilities
-    through the MCP interface.
-
     Args:
         query: The search query to execute
-        model: Available model to use (
-        "gemini-2.5-pro", "gemini-2.5-flash", "gemini-2.5-flash-lite",
-        "gemini-3-pro-preview", "gemini-3-flash-preview",
-        )
+        model: Available model to use (e.g., "gemini-1.5-pro", "gemini-1.5-flash")
         allowed_tools: The tools allowed for the research (default: "google_web_search")
-
-    Returns:
-        str: The search results or an error message if execution fails
     """
-    # Use shutil to find the executable in the system PATH
     gemini_bin = os.environ.get("GEMINI_BIN") or shutil.which("gemini")
 
     if not gemini_bin:
-        error_msg = "The 'gemini' executable was not found in PATH. Please install the Gemini CLI."
-        return f"Error: {error_msg}. Please ensure the 'gemini' CLI is installed and in PATH."
+        return "Error: The 'gemini' executable was not found in PATH."
 
-    # Build the command
     cmd = [gemini_bin]
-
     if model:
         cmd.extend(["-m", model])
 
     cmd.extend(["--allowed-tools", allowed_tools])
     cmd.append(query)
 
-    # Capture output strictly
-    # The cmd is constructed with the provided inputs
     try:
-        result = subprocess.run(cmd, check=True, capture_output=True, text=True)  # noqa: S603
+        result = subprocess.run(cmd, check=True, capture_output=True, text=True)
         return result.stdout
     except subprocess.CalledProcessError as e:
-        error_msg = e.stderr if e.stderr else "Unknown error"
-        error_message = f"Gemini CLI error (Exit {e.returncode}): {error_msg}"
-        return f"Error: Gemini CLI execution failed - {error_message}"
+        return f"Error: Gemini CLI error (Exit {e.returncode}): {e.stderr or 'Unknown error'}"
     except Exception as e:
         return f"Error: Unexpected error occurred - {str(e)}"
 
 
+@mcp.tool()
+def code_review(file_path: str, query: str) -> str:
+    """Analyze a local source code file using the Gemini CLI.
+
+    Args:
+        file_path: The path to the file to be processed.
+        query: The instruction or question about the code (e.g., "Review for security issues").
+    """
+    gemini_bin = os.environ.get("GEMINI_BIN") or shutil.which("gemini")
+
+    if not gemini_bin:
+        return "Error: The 'gemini' executable was not found in PATH."
+
+    path = Path(file_path)
+    if not path.exists():
+        return f"Error: File '{file_path}' not found."
+
+    try:
+        # Read file content to pipe into stdin
+        file_content = path.read_text(encoding="utf-8")
+
+        # Execute: cat file | gemini -p "query"
+        cmd = [gemini_bin, "-p", query]
+
+        result = subprocess.run(
+            cmd, input=file_content, capture_output=True, text=True, check=True
+        )
+        return result.stdout
+    except subprocess.CalledProcessError as e:
+        return f"Error: Code review failed (Exit {e.returncode}): {e.stderr or 'Unknown error'}"
+    except Exception as e:
+        return f"Error: {str(e)}"
+
+
 def main() -> None:
     """
-    Initializes and runs the FastMCP server to expose the web_search tool.
+    Initializes and runs the FastMCP server.
     """
     mcp.run()
 
