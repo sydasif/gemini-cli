@@ -34,16 +34,13 @@ def execute_gemini_command(cmd: list[str], input: str | None = None) -> str:
         # Security: cmd is constructed from validated inputs and gemini_bin path,
         # not directly from user input, reducing injection risk
         result = subprocess.run(
-            cmd,
-            check=True,
-            capture_output=True,
-            text=True,
-            input=input
+            cmd, check=True, capture_output=True, text=True, input=input
         )  # noqa: S603
         return result.stdout
     except subprocess.CalledProcessError as e:
         # Handle command execution errors (non-zero exit codes)
-        return f"Error: Gemini CLI error (Exit {e.returncode}): {e.stderr or 'Unknown error'}"
+        error_msg = e.stderr or "Unknown error"
+        return f"Error: Gemini CLI error (Exit {e.returncode}): {error_msg}"
     except FileNotFoundError:
         # Handle case where gemini executable is not found
         return "Error: The 'gemini' executable was not found."
@@ -78,9 +75,10 @@ def validate_file_path(file_path: str) -> tuple[bool, str, Path | None]:
         resolved_path.relative_to(Path.cwd())
     except ValueError:
         # Path is outside the allowed directory structure
+        error_msg = f"Error: Path outside allowed: '{file_path}'."
         return (
             False,
-            f"Error: Access denied. File path '{file_path}' is outside the allowed directory.",
+            error_msg,
             None,
         )
 
@@ -100,9 +98,10 @@ def read_file_safely(resolved_path: Path) -> tuple[bool, str, str | None]:
         file_content = resolved_path.read_text(encoding="utf-8")
         return True, "", file_content
     except UnicodeDecodeError:
+        error_msg = f"Error: Invalid file format or encoding: '{resolved_path}'."
         return (
             False,
-            f"Error: File '{resolved_path}' is not a text file or contains invalid UTF-8 encoding.",
+            error_msg,
             None,
         )
     except Exception as e:

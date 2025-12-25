@@ -1,7 +1,7 @@
 """MCP server implementation that exposes research and code review capabilities.
 
-This module implements the MCP (Model Context Protocol) server using FastMCP that exposes
-web_search and code_review tools.
+This module implements the MCP (Model Context Protocol) server using FastMCP
+that exposes web_search and code_review tools.
 """
 
 from mcp.server.fastmcp import FastMCP
@@ -49,8 +49,10 @@ def code_review(
 
     Args:
         file_path: The path to the file to be processed.
-        query: The instruction or question about the code (e.g., "Review for security issues").
-        allowed_tools: The tools allowed for the code review (default: "codebase_investigator")
+        query: The instruction or question about the code (e.g., "Review for
+            security issues").
+        allowed_tools: The tools allowed for the code review (default:
+            "codebase_investigator")
     """
     gemini_bin = get_gemini_bin()
 
