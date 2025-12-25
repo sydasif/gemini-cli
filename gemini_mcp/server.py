@@ -24,7 +24,10 @@ def web_search(
 
     Args:
         query: The search query to execute
-        model: Available model to use (e.g., "gemini-1.5-pro", "gemini-1.5-flash")
+        model: Optional default: None. The Gemini model to use for the search.
+        Supported models are: ("gemini-2.5-pro", "gemini-2.5-flash", "gemini-2.5-flash-lite",
+        "gemini-3-pro-preview", "gemini-3-flash-preview")
+
         allowed_tools: The tools allowed for the research (default: "google_web_search")
     """
     gemini_bin = get_gemini_bin()
