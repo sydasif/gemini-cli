@@ -36,19 +36,21 @@ def web_search(
     if model:
         cmd.extend(["-m", model])
 
-    cmd.extend(["--allowed-tools", allowed_tools])
-    cmd.append(query)
+    cmd.extend(["--allowed-tools", allowed_tools, query])
 
     return execute_gemini_command(cmd)
 
 
 @mcp.tool()
-def code_review(file_path: str, query: str) -> str:
+def code_review(
+    file_path: str, query: str, allowed_tools: str = "codebase_investigator"
+) -> str:
     """Analyze a local source code file using the Gemini CLI.
 
     Args:
         file_path: The path to the file to be processed.
         query: The instruction or question about the code (e.g., "Review for security issues").
+        allowed_tools: The tools allowed for the code review (default: "codebase_investigator")
     """
     gemini_bin = get_gemini_bin()
 
@@ -65,10 +67,10 @@ def code_review(file_path: str, query: str) -> str:
     if not is_success:
         return error_msg
 
-    # Execute: cat file | gemini -p "query"
-    cmd = [gemini_bin, "-p", query]
+    # Execute: cat file | gemini -p "query" --allowed-tools "allowed_tools"
+    cmd = [gemini_bin, "--allowed-tools", allowed_tools, "-p", query]
 
-    return execute_gemini_command(cmd)
+    return execute_gemini_command(cmd, input=file_content)
 
 
 def main() -> None:

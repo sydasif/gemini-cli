@@ -20,11 +20,12 @@ def is_gemini_available() -> bool:
     return get_gemini_bin() is not None
 
 
-def execute_gemini_command(cmd: list[str]) -> str:
+def execute_gemini_command(cmd: list[str], input: str | None = None) -> str:
     """Execute a gemini command and return the result.
 
     Args:
         cmd: The command to execute as a list of strings
+        input: Optional input to pass to the command via stdin
 
     Returns:
         The output from the command or an error message
@@ -32,7 +33,13 @@ def execute_gemini_command(cmd: list[str]) -> str:
     try:
         # Security: cmd is constructed from validated inputs and gemini_bin path,
         # not directly from user input, reducing injection risk
-        result = subprocess.run(cmd, check=True, capture_output=True, text=True)  # noqa: S603
+        result = subprocess.run(
+            cmd,
+            check=True,
+            capture_output=True,
+            text=True,
+            input=input
+        )  # noqa: S603
         return result.stdout
     except subprocess.CalledProcessError as e:
         return f"Error: Gemini CLI error (Exit {e.returncode}): {e.stderr or 'Unknown error'}"
