@@ -42,12 +42,16 @@ def execute_gemini_command(cmd: list[str], input: str | None = None) -> str:
         )  # noqa: S603
         return result.stdout
     except subprocess.CalledProcessError as e:
+        # Handle command execution errors (non-zero exit codes)
         return f"Error: Gemini CLI error (Exit {e.returncode}): {e.stderr or 'Unknown error'}"
     except FileNotFoundError:
+        # Handle case where gemini executable is not found
         return "Error: The 'gemini' executable was not found."
     except PermissionError:
+        # Handle permission errors when executing the command
         return "Error: Permission denied when trying to execute the 'gemini' command."
     except Exception as e:
+        # Handle any other unexpected errors
         return f"Error: Unexpected error occurred - {str(e)}"
 
 
@@ -60,16 +64,20 @@ def validate_file_path(file_path: str) -> tuple[bool, str, Path | None]:
     Returns:
         A tuple of (is_valid, error_message, resolved_path)
     """
+    # Convert the file path to a Path object
     path = Path(file_path)
     if not path.exists():
+        # Check if the file exists before proceeding
         return False, f"Error: File '{file_path}' not found.", None
 
-    # Resolve the path to prevent path traversal attacks
+    # Resolve the path to prevent path traversal attacks (e.g., "../../../etc/passwd")
     resolved_path = path.resolve()
-    # Ensure the resolved path is within the current working directory
+    # Ensure the resolved path is within the current working directory to prevent
+    # access to files outside the intended directory
     try:
         resolved_path.relative_to(Path.cwd())
     except ValueError:
+        # Path is outside the allowed directory structure
         return (
             False,
             f"Error: Access denied. File path '{file_path}' is outside the allowed directory.",
