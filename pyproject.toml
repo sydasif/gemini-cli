@@ -12,6 +12,22 @@ dependencies = [
 # This creates the command 'gemini-mcp' that calls the main function
 gemini-mcp = "gemini_mcp.server:main"
 
+[tool.ruff]
+# Ruff configuration
+
+[tool.ruff.lint]
+# Extend the recommended configuration
+extend-ignore = [
+    # S101: Use of assert detected - OK in tests
+    "S101",
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Ignore subprocess security warnings in core.py since they are intentional and secure
+"gemini_mcp/core.py" = ["S603"]
+# Ignore assert warnings in test files since they are appropriate for tests
+"tests/*" = ["S101"]
+
 [dependency-groups]
 dev = [
     "pytest>=9.0.2",

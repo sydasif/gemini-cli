@@ -12,6 +12,9 @@ This MCP server acts as a bridge between MCP clients and the Gemini CLI, providi
 - **Code Review Tool**: Analyzes source code files using the Gemini CLI with security validation
 - **Secure File Access**: Implements path validation to prevent directory traversal attacks
 - **Command Execution**: Safely executes Gemini CLI commands with proper error handling
+- **Security Enhancements**: Includes argument injection prevention, model validation, and file size limits
+- **Performance Improvements**: Uses async operations to prevent server blocking
+- **Consistent Error Handling**: Standardized error handling across all functions
 
 ## Prerequisites
 
@@ -80,6 +83,9 @@ code_review(
 
 - File paths are validated to prevent directory traversal attacks
 - Input is sanitized before command execution
+- Argument injection is prevented by using `--` separator in web search commands
+- Model names are validated against a supported list to prevent invalid model usage
+- File size limits (default 10MB) prevent memory exhaustion attacks
 - The server requires the `gemini` executable to be available in PATH or specified via GEMINI_BIN environment variable
 - Error messages are designed to not expose sensitive system information
 
@@ -122,9 +128,10 @@ uv run ruff format .
 
 ### Core Components
 
-- `gemini_mcp/server.py`: Main MCP server implementation with FastMCP framework
-- `gemini_mcp/core.py`: Core functionality including secure file handling and command execution
+- `gemini_mcp/server.py`: Main MCP server implementation with FastMCP framework, now using async operations for performance
+- `gemini_mcp/core.py`: Core functionality including secure file handling, command execution, and standardized error handling
 - `pyproject.toml`: Project configuration using uv for dependency management
+- `tests/`: Comprehensive test suite with unit and integration tests
 
 ## License
 
